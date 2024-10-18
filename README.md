@@ -4,7 +4,7 @@ SỬ DỤNG ESP8266 ĐO NHIỆT ĐỘ , ĐỘ ẨM, ÁNH SÁNG, ĐIỀU KHIỂN 
 
 ### 📌 Lý do chọn đề tài
 
-Internet of Things (IoT) là xu hướng đang được các doanh nghiệp trong lĩnh vực công nghệ quan tâm và đầu tư nghiên cứu. Cuộc đua IoT đã và đang diễn ra mạnh mẽ giữa các doanh nghiệp trên toàn thế giới. Theo Gartner, đến năm 2020, thế giới sẽ có khoảng 20 tỷ thiết bị sử dụng IoT, doanh số dự kiến trong năm là 437 tỷ USD. Nắm bắt được nhu cầu đó và kết hợp yêu cầu của môn học nhóm chúng em đã cho phát triển một ứng dụng IoT là một hệ thống điều khiển phơi đồ thông minh. Hệ thống được thiết kế hợp lý với mong muốn được tiếp cận đến với nhiều người dùng nhất có thể.
+Internet of Things (IoT) là xu hướng đang được các doanh nghiệp trong lĩnh vực công nghệ quan tâm và đầu tư nghiên cứu. Cuộc đua IoT đã và đang diễn ra mạnh mẽ giữa các doanh nghiệp trên toàn thế giới. Theo Gartner, đến năm 2020, thế giới sẽ có khoảng 20 tỷ thiết bị sử dụng IoT, doanh số dự kiến trong năm là 437 tỷ USD. Nắm bắt được nhu cầu đó và kết hợp yêu cầu của môn học nhóm chúng em đã cho phát triển một ứng dụng IoT là một hệ thống điều khiển giám sát đo nhiệt độ, độ ẩm, ánh sáng.  Hệ thống được thiết kế hợp lý với mong muốn được tiếp cận đến với nhiều người dùng nhất có thể.
 
 ### 📌 Mô tả nội dung đề tài
 
