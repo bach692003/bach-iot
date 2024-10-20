@@ -6,6 +6,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>MẠNG CẢM BIẾN</title>
   <!-- CSS -->
+  <a href="https://github.com/bach692003/bach-iot" target="_blank" class="github-link">Github</a>
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" />
   <link href="https://cdn.jsdelivr.net/gh/gitbrent/bootstrap4-toggle@3.6.1/css/bootstrap4-toggle.min.css" rel="stylesheet" />
   <link href="https://fonts.googleapis.com/css?family=Source+Code+Pro:200" rel="stylesheet">
@@ -222,15 +223,14 @@ nav ul li a#statistics-link {
   color: #33FF57; /* Đổi màu chữ cho Thống Kê (màu xanh lá) */
 }
 
+   
+
   
   </style>
 </head>
 <body>
 
-  <nav>
-    <a href="/sensor">Sensor Data</a>
-    <a href="/device-history">Device History</a>
-</nav>
+
 
   <!-- Nội dung chính -->
   <div class="container p-5 my-4">
@@ -259,6 +259,7 @@ nav ul li a#statistics-link {
                 </div>
               </div>
             </div>
+
             <div class="card mb-4">
               <div class="card-header" style="background-color: rgba(80, 144, 107, 0.614)">
                 <h5 class="text-center text-white">
@@ -299,7 +300,45 @@ nav ul li a#statistics-link {
             </div>
             <div class="container">
               
-            
+              <div class="card mb-4">
+                <div class="card-header" style="background-color: rgba(22, 123, 190, 0.7)">
+                  <h6 class="text-center text-white">
+                    <i class="fas fa-wind icon-custom icon-wind"></i> <!-- Wind Speed Icon -->
+                    Tốc độ gió ảo
+                  </h6>
+                </div>
+                <div class="card-body">
+                  <div class="row">
+                    <div class="col">Giá trị đo được:</div>
+                  </div>
+                  <div class="row">
+                    <div class="col-sm-6 text-end">
+                      <span id="data_wind_speed">Chưa có dữ liệu</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Phần hiển thị  cảnh báo -->
+<div class="container">
+  <div class="card mb-4">
+    <div class="card-header" style="background-color: rgba(255, 0, 0, 0.5)">
+      <h5 class="text-center text-white">
+        <i class="fas fa-exclamation-circle icon-custom icon-alert"></i> <!-- Icon Cảnh Báo -->
+        Cảnh Báo
+      </h5>
+    </div>
+    <div class="card-body text-center">
+      <div id="ledIndicator" style="display: none; width: 50px; height: 50px; border-radius: 50%; background-color: red; margin: 0 auto;"></div>
+      <div id="ledAlert" class="led-alert" style="display: none; margin-top: 10px; font-weight: bold; color: red;">
+        Gió vượt quá 60 km/h!
+      </div>
+    </div>
+  </div>
+</div>
+              
+              
+              
             <!-- Device Control Section -->
 <div class="controls-container">
   <div class="device-control">
@@ -321,154 +360,204 @@ nav ul li a#statistics-link {
   </div>
 </div>
 
-        
-            
+<div class="device-control">
+  <h2>Đèn LED Cảnh Báo</h5>
+  <button id="ledBtn" onclick="toggleDevice('ledBtn', 'led')" class="led-btn off">Bật</button>
+  <p>Status: <span id="ledStatus">Off</span></p>
+</div>
+</div>
+  
+
               <!-- Chart Section -->
               <div class="chart-container">
-                  <canvas id="sensorChart" class="border rounded" style="max-height: 400px; width: 100%; background-color: rgb(212, 210, 215);"></canvas>
+                  <canvas id="sensorChart" class="border rounded" style="max-height: 800px; width: 100%; background-color: rgb(212, 210, 215);"></canvas>
               </div>
           </div>
           
-         
-<script>
-    // Kết nối đến MQTT broker
-    const mqttBroker = "10.21.194.50"; // Địa chỉ IP của broker MQTT
-    const mqttPort = 9002; // Cổng MQTT
-    const username = "bach"; // Tên người dùng nếu có
-    const password = "123"; // Mật khẩu nếu có
-    const clientId = "webClient_" + Math.random().toString(16).substr(2, 8); // ID của client
+       
 
-    // Tạo client MQTT
-    const client = mqtt.connect(`ws://${mqttBroker}:${mqttPort}`, {
-        username: username,
-        password: password
-    });
 
-    // Thiết lập biểu đồ với Chart.js
-    const ctx = document.getElementById('sensorChart').getContext('2d');
-    const sensorChart = new Chart(ctx, {
-        type: 'line',
-        data: {
-            labels: [],
-            datasets: [
-                {
-                    label: 'Nhiệt độ (°C)',
-                    data: [],
-                    borderColor: 'red',
-                    borderWidth: 2,
-                    fill: false
+          <script>
+            // Kết nối đến MQTT broker
+            const mqttBroker = "192.168.2.37"; // Địa chỉ IP của broker MQTT
+            const mqttPort = 9002; // Cổng MQTT
+            const username = "bach"; // Tên người dùng nếu có
+            const password = "123"; // Mật khẩu nếu có
+            const clientId = "webClient_" + Math.random().toString(16).substr(2, 8); // ID của client
+        
+            // Tạo client MQTT
+            const client = mqtt.connect(`ws://${mqttBroker}:${mqttPort}`, {
+                username: username,
+                password: password
+            });
+        
+            // Thiết lập biểu đồ với Chart.js
+            const ctx = document.getElementById('sensorChart').getContext('2d');
+            const sensorChart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: [],
+                    datasets: [
+                        {
+                            label: 'Nhiệt độ (°C)',
+                            data: [],
+                            borderColor: 'red',
+                            borderWidth: 2,
+                            fill: false
+                        },
+                        {
+                            label: 'Độ ẩm (%)',
+                            data: [],
+                            borderColor: 'green',
+                            borderWidth: 2,
+                            fill: false
+                        },
+                        {
+                            label: 'Cường độ ánh sáng (lux)',
+                            data: [],
+                            borderColor: 'yellow',
+                            borderWidth: 2,
+                            fill: false
+                        },
+                        {
+                            label: 'Tốc độ gió (km/h)',
+                            data: [],
+                            borderColor: 'blue',
+                            borderWidth: 2,
+                            fill: false
+                        }
+                    ]
                 },
-                {
-                    label: 'Độ ẩm (%)',
-                    data: [],
-                    borderColor: 'green',
-                    borderWidth: 2,
-                    fill: false
-                },
-                {
-                    label: 'Cường độ ánh sáng (lux)',
-                    data: [],
-                    borderColor: 'yellow',
-                    borderWidth: 2,
-                    fill: false
-                }
-            ]
-        },
-        options: {
-            responsive: true,
-            scales: {
-                x: {
-                    type: 'time',
-                    time: {
-                        unit: 'second' // Hiển thị dữ liệu theo giaay
+                options: {
+                    responsive: true,
+                    scales: {
+                        x: {
+                            type: 'time',
+                            time: {
+                                unit: 'second' // Hiển thị dữ liệu theo giây
+                            }
+                        },
+                        y: {
+                            beginAtZero: true
+                        }
                     }
-                },
-                y: {
-                    beginAtZero: true
                 }
-            }
-        }
-    });
+            });
+        
+            // Khi kết nối thành công
+            client.on('connect', function () {
+                console.log('Connected to MQTT broker');
+                client.subscribe('sensor/data');  // Đăng ký topic để nhận dữ liệu cảm biến
+                client.subscribe("control/light"); // Đăng ký các chủ đề điều khiển
+                client.subscribe("control/fan");
+                client.subscribe("control/ac");
+            });
 
-    // Khi kết nối thành công
-    client.on('connect', function () {
-        console.log('Connected to MQTT broker');
-        client.subscribe('sensor/data');  // Đăng ký topic để nhận dữ liệu cảm biến
-        client.subscribe("control/light"); // Đăng ký các chủ đề điều khiển
-        client.subscribe("control/fan");
-        client.subscribe("control/ac");
-    });
 
-    // Khi nhận được dữ liệu từ topic đã đăng ký
-    client.on('message', function (topic, message) {
-        if (topic === 'sensor/data') {
-            const data = JSON.parse(message.toString());
-
-            // Hiển thị dữ liệu lên trang HTML
-            document.getElementById('data_temperature').innerHTML = data.temperature + ' °C';
-            document.getElementById('data_humidity').innerHTML = data.humidity + ' %';
-            document.getElementById('data_light').innerHTML = data.light + ' Lux';
-
-            // Cập nhật biểu đồ
-            const currentTime = new Date();
-            sensorChart.data.labels.push(currentTime);
-            sensorChart.data.datasets[0].data.push(data.temperature); // Nhiệt độ
-            sensorChart.data.datasets[1].data.push(data.humidity);    // Độ ẩm
-            sensorChart.data.datasets[2].data.push(data.light);       // Cường độ ánh sáng
-
-            // Giới hạn số lượng dữ liệu trên biểu đồ
-            if (sensorChart.data.labels.length > 20) {
-                sensorChart.data.labels.shift();
-                sensorChart.data.datasets[0].data.shift();
-                sensorChart.data.datasets[1].data.shift();
-                sensorChart.data.datasets[2].data.shift();
-            }
-
-            sensorChart.update();
-        }
-
-        // Xử lý điều khiển thiết bị
-        if (topic.startsWith("control/")) {
-            const device = topic.split('/')[1]; // Lấy tên thiết bị
-            const status = message.toString(); // Lấy trạng thái từ thông điệp
-
-            // Cập nhật trạng thái cho giao diện người dùng
-            const statusSpan = document.getElementById(`${device}Status`);
-            statusSpan.innerText = (status === 'ON') ? 'On' : 'Off';
-        }
-    });
-
-    // Hàm điều khiển thiết bị
-    function toggleDevice(buttonId, device) {
-    const statusSpan = document.getElementById(device + 'Status');
-    const button = document.getElementById(buttonId);
-
-    // Lấy trạng thái hiện tại của thiết bị
-    const currentStatus = statusSpan.innerText;
-
-    // Đảo ngược trạng thái
-    const newStatus = currentStatus === "On" ? "Off" : "On";
-    statusSpan.innerText = newStatus;
-
-    // Gửi lệnh qua MQTT
-    const command = newStatus === "On" ? "ON" : "OFF";
-    const topic = `control/${device}`;
-    client.publish(topic, command);
-
-    // Thay đổi văn bản và lớp của nút
-    if (newStatus === "On") {
-        button.innerText = "Tắt";
-        button.classList.remove('off');
-        button.classList.add('on');
-    } else {
-        button.innerText = "Bật";
-        button.classList.remove('on');
-        button.classList.add('off');
+              // Hàm hiển thị LED cảnh báo
+    function showLedAlert(message) {
+        const ledIndicator = document.getElementById('ledIndicator');
+        const ledAlert = document.getElementById('ledAlert');
+        
+        // Hiển thị đèn LED và thông báo cảnh báo
+        ledIndicator.style.display = 'block';
+        ledAlert.innerText = message;
+        ledAlert.style.display = 'block';
     }
-}
 
-</script>
-  
+    // Hàm ẩn LED cảnh báo
+    function hideLedAlert() {
+        const ledIndicator = document.getElementById('ledIndicator');
+        const ledAlert = document.getElementById('ledAlert');
+
+        // Ẩn đèn LED và thông báo cảnh báo
+        ledIndicator.style.display = 'none';
+        ledAlert.style.display = 'none';
+    }
+
+        
+            // Khi nhận được dữ liệu từ topic đã đăng ký
+            client.on('message', function (topic, message) {
+                if (topic === 'sensor/data') {
+                    const data = JSON.parse(message.toString());
+        
+                    // Hiển thị dữ liệu lên trang HTML
+                    document.getElementById('data_temperature').innerHTML = data.temperature + ' °C';
+                    document.getElementById('data_humidity').innerHTML = data.humidity + ' %';
+                    document.getElementById('data_light').innerHTML = data.light + ' Lux';
+                    document.getElementById('data_wind_speed').innerHTML = data.wind_speed + ' km/h';
+
+                    // Kiểm tra các điều kiện để bật LED cảnh báo
+                    if (data.wind_speed > 60) {
+                    showLedAlert(`Gió vượt quá 60 km/h!`);
+            } else {
+                  hideLedAlert();
+            }
+        
+                    // Cập nhật biểu đồ
+                    const currentTime = new Date();
+                    sensorChart.data.labels.push(currentTime);
+                    sensorChart.data.datasets[0].data.push(data.temperature); // Nhiệt độ
+                    sensorChart.data.datasets[1].data.push(data.humidity);    // Độ ẩm
+                    sensorChart.data.datasets[2].data.push(data.light);       // Cường độ ánh sáng
+                    sensorChart.data.datasets[3].data.push(data.wind_speed); // gió
+        
+                    // Giới hạn số lượng dữ liệu trên biểu đồ
+                    if (sensorChart.data.labels.length > 20) {
+                        sensorChart.data.labels.shift();
+                        sensorChart.data.datasets[0].data.shift();
+                        sensorChart.data.datasets[1].data.shift();
+                        sensorChart.data.datasets[2].data.shift();
+                        sensorChart.data.datasets[3].data.shift();
+                    }
+        
+                    sensorChart.update();
+                }
+        
+                // Xử lý điều khiển thiết bị
+                if (topic.startsWith("control/")) {
+                    const device = topic.split('/')[1]; // Lấy tên thiết bị
+                    const status = message.toString(); // Lấy trạng thái từ thông điệp
+        
+                    // Cập nhật trạng thái cho giao diện người dùng
+                    const statusSpan = document.getElementById(`${device}Status`);
+                    statusSpan.innerText = (status === 'ON') ? 'On' : 'Off';
+                }
+            });
+        
+            
+        
+             // Hàm điều khiển thiết bị (light, fan, ac, led)
+    function toggleDevice(buttonId, device) {
+        const statusSpan = document.getElementById(device + 'Status');
+        const button = document.getElementById(buttonId);
+
+        // Lấy trạng thái hiện tại của thiết bị
+        const currentStatus = statusSpan.innerText;
+
+        // Đảo ngược trạng thái
+        const newStatus = currentStatus === "On" ? "Off" : "On";
+        statusSpan.innerText = newStatus;
+
+        // Gửi lệnh qua MQTT
+        const command = newStatus === "On" ? "ON" : "OFF";
+        const topic = `control/${device}`;
+        client.publish(topic, command);
+
+        // Thay đổi văn bản và lớp của nút
+        if (newStatus === "On") {
+            button.innerText = "Tắt";
+            button.classList.remove('off');
+            button.classList.add('on');
+        } else {
+            button.innerText = "Bật";
+            button.classList.remove('on');
+            button.classList.add('off');
+        }
+    }
+
+        </script>
+        
 
 
 </body>
