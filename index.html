@@ -230,9 +230,11 @@ nav ul li a#statistics-link {
 </head>
 <body>
 
+  <nav>
+    <a href="sensor.html" target="_blank">Dữ Liệu Cảm Biến</a>
+    <a href="device_history.html" target="_blank">Lịch Sử Thiết Bị</a>
+</nav>
 
-
-  <!-- Nội dung chính -->
   <div class="container p-5 my-4">
     <div class="card card-custom-bg">
       <div class="card-header text-white" style="background-color: rgba(91, 80, 144, 0.458)">
@@ -259,7 +261,7 @@ nav ul li a#statistics-link {
                 </div>
               </div>
             </div>
-
+  
             <div class="card mb-4">
               <div class="card-header" style="background-color: rgba(80, 144, 107, 0.614)">
                 <h5 class="text-center text-white">
@@ -278,7 +280,14 @@ nav ul li a#statistics-link {
                 </div>
               </div>
             </div>
+  
+            <!-- Di chuyển phần biểu đồ lên ngay sau phần Độ ẩm -->
+            <div class="chart-container mb-4">
+              <canvas id="sensorChart" class="border rounded" style="max-height: 800px; width: 100%; background-color: rgb(212, 210, 215);"></canvas>
+            </div>
+            
           </div>
+  
           <div class="col-sm-6">
             <div class="card mb-4">
               <div class="card-header" style="background-color: rgba(94, 12, 62, 0.614)">
@@ -299,7 +308,6 @@ nav ul li a#statistics-link {
               </div>
             </div>
             <div class="container">
-              
               <div class="card mb-4">
                 <div class="card-header" style="background-color: rgba(22, 123, 190, 0.7)">
                   <h6 class="text-center text-white">
@@ -318,62 +326,58 @@ nav ul li a#statistics-link {
                   </div>
                 </div>
               </div>
-
+  
               <!-- Phần hiển thị  cảnh báo -->
-<div class="container">
-  <div class="card mb-4">
-    <div class="card-header" style="background-color: rgba(255, 0, 0, 0.5)">
-      <h5 class="text-center text-white">
-        <i class="fas fa-exclamation-circle icon-custom icon-alert"></i> <!-- Icon Cảnh Báo -->
-        Cảnh Báo
-      </h5>
-    </div>
-    <div class="card-body text-center">
-      <div id="ledIndicator" style="display: none; width: 50px; height: 50px; border-radius: 50%; background-color: red; margin: 0 auto;"></div>
-      <div id="ledAlert" class="led-alert" style="display: none; margin-top: 10px; font-weight: bold; color: red;">
-        Gió vượt quá 60 km/h!
+              <div class="container">
+                <div class="card mb-4">
+                  <div class="card-header" style="background-color: rgba(255, 0, 0, 0.5)">
+                    <h5 class="text-center text-white">
+                      <i class="fas fa-exclamation-circle icon-custom icon-alert"></i> <!-- Icon Cảnh Báo -->
+                      Cảnh Báo
+                    </h5>
+                  </div>
+                  <div class="card-body text-center">
+                    <div id="ledIndicator" style="display: none; width: 50px; height: 50px; border-radius: 50%; background-color: red; margin: 0 auto;"></div>
+                    <div id="ledAlert" class="led-alert" style="display: none; margin-top: 10px; font-weight: bold; color: red;">
+                      Gió vượt quá 60 km/h!
+                    </div>
+                  </div>
+                </div>
+              </div>
+  
+              <!-- Device Control Section -->
+              <div class="controls-container">
+                <div class="device-control">
+                  <h2>Quạt</h2>
+                  <button id="fanBtn" onclick="toggleDevice('fanBtn', 'fan')" class="off">Bật</button>
+                  <p>Status: <span id="fanStatus">Off</span></p>
+                </div>
+  
+                <div class="device-control">
+                  <h2>Điều Hòa</h2>
+                  <button id="acBtn" onclick="toggleDevice('acBtn', 'ac')" class="off">Bật</button>
+                  <p>Status: <span id="acStatus">Off</span></p>
+                </div>
+  
+                <div class="device-control">
+                  <h2>Đèn</h2>
+                  <button id="lightBtn" onclick="toggleDevice('lightBtn', 'light')" class="off">Bật</button>
+                  <p>Status: <span id="lightStatus">Off</span></p>
+                </div>
+              </div>
+  
+              <div class="device-control">
+                <h2>Đèn LED Cảnh Báo</h2>
+                <button id="ledBtn" onclick="toggleDevice('ledBtn', 'led')" class="led-btn off">Bật</button>
+                <p>Status: <span id="ledStatus">Off</span></p>
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   </div>
-</div>
-              
-              
-              
-            <!-- Device Control Section -->
-<div class="controls-container">
-  <div class="device-control">
-      <h2>Quạt</h2>
-      <button id="fanBtn" onclick="toggleDevice('fanBtn', 'fan')" class="off">Bật</button>
-      <p>Status: <span id="fanStatus">Off</span></p>
-  </div>
-
-  <div class="device-control">
-      <h2>Điều Hòa</h2>
-      <button id="acBtn" onclick="toggleDevice('acBtn', 'ac')" class="off">Bật</button>
-      <p>Status: <span id="acStatus">Off</span></p>
-  </div>
-
-  <div class="device-control">
-      <h2>Đèn</h2>
-      <button id="lightBtn" onclick="toggleDevice('lightBtn', 'light')" class="off">Bật</button>
-      <p>Status: <span id="lightStatus">Off</span></p>
-  </div>
-</div>
-
-<div class="device-control">
-  <h2>Đèn LED Cảnh Báo</h5>
-  <button id="ledBtn" onclick="toggleDevice('ledBtn', 'led')" class="led-btn off">Bật</button>
-  <p>Status: <span id="ledStatus">Off</span></p>
-</div>
-</div>
   
-
-              <!-- Chart Section -->
-              <div class="chart-container">
-                  <canvas id="sensorChart" class="border rounded" style="max-height: 800px; width: 100%; background-color: rgb(212, 210, 215);"></canvas>
-              </div>
-          </div>
-          
        
 
 
