@@ -1,0 +1,294 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Rain Sensor Dashboard</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://unpkg.com/mqtt/dist/mqtt.min.js"></script>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            background-color: #e9ecef;
+            color: #333;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        h1 {
+            margin-top: 20px;
+            color: #007bff;
+        }
+        .container {
+            width: 100%;
+            max-width: 800px;
+            padding: 20px;
+            margin: 20px;
+            background-color: #fff;
+            border-radius: 8px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+        }
+        .card {
+            margin-bottom: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+        .card-header {
+            background-color: #007bff;
+            color: white;
+            padding: 15px;
+            border-top-left-radius: 8px;
+            border-top-right-radius: 8px;
+            text-align: center;
+            font-size: 1.2em;
+        }
+        .card-body {
+            padding: 15px;
+            background-color: #f8f9fa;
+            border-bottom-left-radius: 8px;
+            border-bottom-right-radius: 8px;
+        }
+        #data_rain {
+            font-size: 1.5em;
+            margin: 10px 0;
+            color: #007bff;
+        }
+        canvas {
+            width: 100% !important;
+            height: 300px !important;
+            margin-top: 20px;
+        }
+        .button-group {
+            margin-top: 20px;
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+        }
+        .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            color: #fff;
+            font-weight: bold;
+            transition: background-color 0.3s ease;
+        }
+        .btn-on {
+            background-color: #28a745;
+        }
+        .btn-on:hover {
+            background-color: #218838;
+        }
+        .btn-off {
+            background-color: #dc3545;
+        }
+        .btn-off:hover {
+            background-color: #c82333;
+        }
+    </style>
+</head>
+<body>
+
+  <nav>
+    <a href="sensor.html" target="_blank">Dữ Liệu Cảm Biến</a>
+    <a href="device_history.html" target="_blank">Lịch Sử Thiết Bị</a>
+</nav>
+
+
+<div class="container">
+    <h1>Dust Sensor Dashboard</h1>
+
+    <div class="card">
+        <div class="card-header">
+            <i class="fas fa-smog"></i> Dữ liệu Độ Bụi
+        </div>
+        <div class="card-body">
+            <div class="row">
+                <div class="col">Giá trị đo được:</div>
+            </div>
+            <div class="row">
+                <div class="col text-end">
+                    <span id="data_dust">Chưa có dữ liệu</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="card-header">
+            <i class="fas fa-chart-line"></i> Biểu Đồ Độ Bụi
+        </div>
+        <div class="card-body">
+            <canvas id="dustChart" height="400"></canvas>
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="card-header">
+            <i class="fas fa-lightbulb"></i> Điều Khiển Đèn LED
+        </div>
+        <div class="card-body">
+            <div class="row mb-3">
+                <div class="col text-center button-group">
+                    <button id="btnLedOn" class="btn btn-on">Bật LED</button>
+                    <button id="btnLedOff" class="btn btn-off">Tắt LED</button>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col text-center">
+                    <span id="ledStatus">Trạng thái: Tắt</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Phần hiển thị cảnh báo độ bụi -->
+    <div class="card mb-4">
+        <div class="card-header" style="background-color: rgba(0, 123, 255, 0.5)">
+            <h5 class="text-center text-white">
+                <i class="fas fa-exclamation-triangle icon-custom icon-alert"></i> <!-- Icon Cảnh Báo -->
+                Cảnh Báo Độ Bụi
+            </h5>
+        </div>
+        <div class="card-body text-center">
+            <div id="dustLedIndicator" style="display: none; width: 50px; height: 50px; border-radius: 50%; background-color: blue; margin: 0 auto;"></div>
+            <div id="dustAlert" class="led-alert" style="display: none; margin-top: 10px; font-weight: bold; color: blue;">
+                Độ bụi vượt quá ngưỡng cho phép!
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    const dustThreshold = 70; // Ngưỡng độ bụi (%)
+    const mqttBroker = "10.21.183.173"; // Địa chỉ IP của broker MQTT
+    const mqttPort = 9002; // Cổng MQTT
+    const username = "bach"; // Tên người dùng
+    const password = "123"; // Mật khẩu
+    const clientId = "webClient_" + Math.random().toString(16).substr(2, 8); // ID của client
+    
+    // Tạo client MQTT
+    const client = mqtt.connect(`ws://${mqttBroker}:${mqttPort}`, {
+        clientId: clientId,
+        username: username,
+        password: password
+    });
+
+    client.on("connect", () => {
+        console.log("Connected to MQTT broker");
+        client.subscribe("sensor/data", (err) => {
+            if (err) console.error("Failed to subscribe:", err);
+        });
+    });
+
+    // Dữ liệu độ bụi
+    const dustData = [];
+    const labels = [];
+
+    // Thiết lập biểu đồ
+    const ctx = document.getElementById('dustChart').getContext('2d');
+    const dustChart = new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: labels,
+            datasets: [{
+                label: 'Dữ liệu độ bụi (%)',
+                data: dustData,
+                borderColor: 'rgba(255, 99, 132, 1)',
+                backgroundColor: 'rgba(255, 99, 132, 0.2)',
+                fill: true,
+                borderWidth: 2
+            }]
+        },
+        options: {
+            responsive: true,
+            scales: {
+                x: {
+                    title: {
+                        display: true,
+                        text: 'Thời gian'
+                    }
+                },
+                y: {
+                    title: {
+                        display: true,
+                        text: 'Độ bụi (%)'
+                    },
+                    beginAtZero: true
+                }
+            }
+        }
+    });
+
+    // Khi nhận được dữ liệu từ topic đã đăng ký
+    client.on('message', function (topic, message) {
+        if (topic === 'sensor/data') {
+            const data = JSON.parse(message.toString());
+
+            // Hiển thị dữ liệu lên trang HTML
+            document.getElementById('data_dust').innerHTML = data.dust + ' %';
+
+            // Cập nhật dữ liệu độ bụi vào biểu đồ
+            dustData.push(data.dust);
+            labels.push(new Date().toLocaleTimeString());
+
+            // Cập nhật biểu đồ
+            dustChart.update();
+
+            // Kiểm tra xem giá trị độ bụi có vượt ngưỡng không
+            if (data.dust > dustThreshold) {
+                showDustAlert();
+            } else {
+                hideDustAlert();
+            }
+        }
+    });
+
+    // Khi nhấn nút Bật LED
+    document.getElementById('btnLedOn').onclick = function() {
+        const message = "ON";
+        client.publish("control/led_dust", message); // Gửi lệnh bật LED
+        document.getElementById('ledStatus').innerHTML = "Trạng thái: Bật";
+    };
+
+    // Khi nhấn nút Tắt LED
+    document.getElementById('btnLedOff').onclick = function() {
+        const message = "OFF";
+        client.publish("control/led_dust", message); // Gửi lệnh tắt LED
+        document.getElementById('ledStatus').innerHTML = "Trạng thái: Tắt";
+    };
+
+    let isAlertVisible = false; // Biến cờ để kiểm tra trạng thái cảnh báo
+    let blinkInterval; // Biến lưu trữ ID của interval
+
+    // Hàm hiển thị cảnh báo độ bụi
+    function showDustAlert() {
+        if (!isAlertVisible) {
+            isAlertVisible = true;
+            document.getElementById('dustLedIndicator').style.display = 'block';
+            document.getElementById('dustAlert').style.display = 'block';
+            document.getElementById('dustLedIndicator').style.backgroundColor = 'red'; // Chỉnh màu đỏ khi có độ bụi
+
+            // Bật đèn LED nhấp nháy
+            blinkInterval = setInterval(() => {
+                const ledIndicator = document.getElementById('dustLedIndicator');
+                ledIndicator.style.display = (ledIndicator.style.display === 'block') ? 'none' : 'block';
+            }, 500); // Nhấp nháy mỗi 500ms
+        }
+    }
+
+    // Hàm ẩn cảnh báo độ bụi
+    function hideDustAlert() {
+        if (isAlertVisible) {
+            isAlertVisible = false;
+            document.getElementById('dustLedIndicator').style.display = 'none';
+            document.getElementById('dustAlert').style.display = 'none';
+            clearInterval(blinkInterval); // Dừng nhấp nháy khi ẩn cảnh báo
+        }
+    }
+</script>
+
+</body>
+</html>
